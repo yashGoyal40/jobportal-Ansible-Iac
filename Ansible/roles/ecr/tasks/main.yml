@@ -22,3 +22,20 @@
 - name: Debug ECR Repository Creation
   ansible.builtin.debug:
     var: ecr_repo
+
+- name: Pull Nginx Image
+  ansible.builtin.command:
+    cmd: "docker pull nginx:latest"
+
+- name: Tag Nginx Image for ECR
+  ansible.builtin.command:
+    cmd: "docker tag nginx:latest {{ ecr_repo.repository.repositoryUri }}:latest"
+
+- name: Authenticate Docker to ECR
+  ansible.builtin.shell:
+
+    cmd: "aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_repo.repository.repositoryUri }}"
+
+- name: Push Nginx Image to ECR
+  ansible.builtin.command:
+    cmd: "docker push {{ ecr_repo.repository.repositoryUri }}:latest"
