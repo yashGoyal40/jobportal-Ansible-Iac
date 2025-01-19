@@ -45,6 +45,20 @@
     state: present
   register: private_subnet_b
 
+- name: Allocate Elastic IP for NAT Gateway
+  amazon.aws.ec2_eip:
+    region: "{{ aws_region }}"
+    state: present
+  register: eip
+
+- name: Create NAT Gateway in Public Subnet A
+  amazon.aws.ec2_vpc_nat_gateway:
+    subnet_id: "{{ public_subnet_a.subnet.id }}"
+    allocation_id: "{{ eip.allocation_id }}"
+    state: present
+  register: nat_gateway
+
+
 - name: Attach Internet Gateway to VPC
   amazon.aws.ec2_vpc_igw:
     vpc_id: "{{ vpc.vpc.id }}"
@@ -66,6 +80,9 @@
 - name: Create Route Table for Private Subnet
   amazon.aws.ec2_vpc_route_table:
     vpc_id: "{{ vpc.vpc.id }}"
+    routes:
+      - dest: "0.0.0.0/0"
+        gateway_id: "{{nat_gateway.nat_gateway_id}}"
     subnets:
       - "{{ private_subnet_a.subnet.id }}"
       - "{{ private_subnet_b.subnet.id }}"
