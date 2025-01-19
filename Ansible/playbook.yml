@@ -1,0 +1,24 @@
+---
+- name: Deploy AWS Infrastructure
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Include VPC Role
+      ansible.builtin.include_role:
+        name: vpc
+
+    - name: Include Security Role
+      ansible.builtin.include_role:
+        name: security
+        
+    - name: Include ALB Role
+      ansible.builtin.include_role:
+        name: alb
+
+    - name: Include ECR Role
+      ansible.builtin.include_role:
+        name: ecr
+
+    - name: Include ECS Role
+      ansible.builtin.include_role:
+        name: ecs

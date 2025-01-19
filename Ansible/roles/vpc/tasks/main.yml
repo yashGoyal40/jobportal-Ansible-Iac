@@ -1,0 +1,73 @@
+---
+- name: Create VPC
+  amazon.aws.ec2_vpc_net:
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ vpc_cidr }}"
+    region: "{{ aws_region }}"
+    state: present
+  register: vpc
+
+- name: Debug VPC
+  ansible.builtin.debug:
+    var: vpc
+
+- name: Create Public Subnet in AZ A
+  amazon.aws.ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ public_subnet_a_cidr }}"
+    az: "{{ az_a }}"
+    map_public: yes
+    state: present
+  register: public_subnet_a
+
+- name: Create Public Subnet in AZ B
+  amazon.aws.ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ public_subnet_b_cidr }}"
+    az: "{{ az_b }}"
+    map_public: yes
+    state: present
+  register: public_subnet_b
+
+- name: Create Private Subnet in AZ A
+  amazon.aws.ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ private_subnet_a_cidr }}"
+    az: "{{ az_a }}"
+    state: present
+  register: private_subnet_a
+
+- name: Create Private Subnet in AZ B
+  amazon.aws.ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ private_subnet_b_cidr }}"
+    az: "{{ az_b }}"
+    state: present
+  register: private_subnet_b
+
+- name: Attach Internet Gateway to VPC
+  amazon.aws.ec2_vpc_igw:
+    vpc_id: "{{ vpc.vpc.id }}"
+    state: present
+  register: igw
+
+- name: Create Route Table for Public Subnet
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    routes:
+      - dest: "0.0.0.0/0"
+        gateway_id: "{{ igw.gateway_id }}"
+    subnets:
+      - "{{ public_subnet_a.subnet.id }}"
+      - "{{ public_subnet_b.subnet.id }}"
+    state: present
+  register: route_table
+
+- name: Create Route Table for Private Subnet
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    subnets:
+      - "{{ private_subnet_a.subnet.id }}"
+      - "{{ private_subnet_b.subnet.id }}"
+    state: present
+  register: private_route_table

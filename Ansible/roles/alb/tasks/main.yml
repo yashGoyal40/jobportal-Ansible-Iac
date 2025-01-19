@@ -1,0 +1,43 @@
+---
+- name: Create Target Group
+  community.aws.elb_target_group:
+    name: "{{ target_group_name }}"
+    protocol: HTTP
+    port: 80
+    vpc_id: "{{ vpc.vpc.id }}"
+    health_check_protocol: HTTP
+    health_check_path: "/health"
+    health_check_interval: 30
+    health_check_timeout: 5
+    healthy_threshold_count: 3
+    unhealthy_threshold_count: 3
+    target_type: ip
+    state: present
+  register: target_group
+
+- name: Debug Target Group
+  ansible.builtin.debug:
+    var: target_group
+
+- name: Create Application Load Balancer with Listener
+  amazon.aws.elb_application_lb:
+    name: "{{ alb_name }}"
+    subnets:
+      - "{{ public_subnet_a.subnet.id }}"
+      - "{{ public_subnet_b.subnet.id }}"
+    security_groups:
+      - "{{ alb_security_group.group_id }}"
+    scheme: internet-facing
+    listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: "{{ target_group.target_group_arn }}"
+    state: present
+  register: alb
+
+
+- name: Debug ALB
+  ansible.builtin.debug:
+    var: alb

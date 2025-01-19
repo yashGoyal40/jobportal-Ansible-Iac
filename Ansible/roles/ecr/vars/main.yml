@@ -1,0 +1,4 @@
+---
+ecr_repo_name: "jobportal-backend"
+aws_region: "ap-south-1"
+

@@ -1,0 +1,15 @@
+[
+  {
+    "name": "{{ ecr_repo.repository.repositoryName }}",
+    "image": "{{ ecr_repo.repository.repositoryUri }}:latest",
+    "essential": true,
+    "memory": 512,
+    "cpu": 256,
+    "portMappings": [
+      {
+        "containerPort": 80,
+        "hostPort": 80
+      }
+    ]
+  }
+]

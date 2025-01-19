@@ -1,0 +1,83 @@
+---
+- name: Create ECS Cluster
+  community.aws.ecs_cluster:
+    name: "{{ ecs_cluster_name }}"
+    state: present
+    capacity_providers:
+      - FARGATE
+  register: ecs_cluster
+
+- name: Debug ECS Cluster
+  ansible.builtin.debug:
+    var: ecs_cluster
+
+- name: Create ECS Task Definition
+  community.aws.ecs_taskdefinition:
+    family: "{{ ecs_task_family }}"
+    network_mode: awsvpc
+    execution_role_arn: "{{ pulling_image_role_arn }}"
+    task_role_arn: "{{ secrets_manager_role_arn }}"
+    cpu: "256"
+    memory: "512"
+    containers:
+      - name: "{{ ecr_repo.repository.repositoryName }}"
+        image: "{{ ecr_repo.repository.repositoryUri }}:latest"
+        essential: true
+        portMappings:
+          - containerPort: 80
+            hostPort: 80
+    state: present
+  register: ecs_task
+
+- name: Debug ECS Task Definition
+  ansible.builtin.debug:
+    var: ecs_task
+
+- name: Create ECS Service
+  community.aws.ecs_service:
+    name: "{{ ecs_service_name }}"
+    cluster: "{{ ecs_cluster_name }}"
+    task_definition: "{{ ecs_task_family }}"
+    desired_count: 1
+    launch_type: FARGATE
+    network_configuration:
+      subnets:
+          - "{{ private_subnet_a.subnet.id }}"
+          - "{{ private_subnet_b.subnet.id }}"
+      security_groups:
+          - "{{ ecs_security_group.group_id }}"
+      assign_public_ip: true
+    load_balancers:
+      - targetGroupArn: "{{ target_group.target_group_arn }}"
+        containerName: "{{ ecr_repo.repository.repositoryName }}"
+        containerPort: 80
+
+    state: present
+  register: ecs_service
+
+- name: Debug ECS Service
+  ansible.builtin.debug:
+    var: ecs_service
+
+- name: Create ECS scaling policy
+  community.aws.application_autoscaling_policy:
+    policy_name: "target-tracking-scaling-policy"
+    service_namespace: ecs
+    resource_id: "service/{{ ecs_cluster_name }}/{{ ecs_service_name }}"
+    scalable_dimension: ecs:service:DesiredCount
+    policy_type: TargetTrackingScaling
+    minimum_tasks: 1
+    maximum_tasks: 6
+    target_tracking_scaling_policy_configuration:
+      TargetValue: 50.0
+      ScaleInCooldown: 60
+      ScaleOutCooldown: 60
+      PredefinedMetricSpecification:
+        PredefinedMetricType: ECSServiceAverageCPUUtilization
+    state: present
+  register: ecs_scaling_policy
+
+
+- name: Debug ECS Scaling Policy
+  ansible.builtin.debug:
+    var: ecs_scaling_policy

@@ -1,0 +1,24 @@
+- name: Create ECR Repository
+  community.aws.ecs_ecr:
+    name: "{{ ecr_repo_name }}"  
+    region: "{{ aws_region }}"
+    image_tag_mutability: mutable
+    lifecycle_policy:
+      rules:
+        - rulePriority: 1
+          description: "Expire images older than 30 days"
+          action:
+            type: "expire"
+          selection:
+            tagStatus: "any"
+            countType: "imageCountMoreThan"
+            countNumber: 10
+    encryption_configuration:
+      encryption_type: "KMS"
+      kms_key: "alias/jobportal" 
+    state: present
+  register: ecr_repo
+
+- name: Debug ECR Repository Creation
+  ansible.builtin.debug:
+    var: ecr_repo

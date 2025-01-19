@@ -1,0 +1,9 @@
+---
+ecs_cluster_name: "jobportal-ecs-cluster"
+ecs_task_family: "jobportal-ecs-task-family"
+ecs_service_name: "jobportal-ecs-service"
+
+secrets_manager_role_arn: "arn:aws:iam::121222884351:role/secrets-manager"
+pulling_image_role_arn: "arn:aws:iam::121222884351:role/jobportal_pulling_image_role"
+ecs_autoscaling_role_arn: "arn:aws:iam::121222884351:role/jobportal-autoscale-role"
+

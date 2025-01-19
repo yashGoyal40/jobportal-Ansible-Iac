@@ -1,0 +1,3 @@
+---
+target_group_name: "jobportal-targtgrp"
+alb_name: "jobportal-alb"
