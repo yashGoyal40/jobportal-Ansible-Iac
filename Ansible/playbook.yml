@@ -26,4 +26,8 @@
     - name: Inform Ecr Repo URI
       ansible.builtin.debug:
         msg: "ecr repo is : {{ecr_repo.repository.repositoryUri}}"
+
+    - name: Inform eip 
+      ansible.builtin.debug:
+        msg: "eip is : {{eip.public_ip}}"
         
