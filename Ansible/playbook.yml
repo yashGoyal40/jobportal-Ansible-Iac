@@ -22,3 +22,8 @@
     - name: Include ECS Role
       ansible.builtin.include_role:
         name: ecs
+
+    - name: Inform Ecr Repo URI
+      ansible.builtin.debug:
+        msg: "ecr repo is : {{ecr_repo.repository.repositoryUri}}"
+        
