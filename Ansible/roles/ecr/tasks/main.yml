@@ -6,7 +6,7 @@
     lifecycle_policy:
       rules:
         - rulePriority: 1
-          description: "Expire images older than 30 days"
+          description: "Expire images older 10 versions"
           action:
             type: "expire"
           selection:
