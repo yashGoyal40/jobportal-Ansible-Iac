@@ -67,7 +67,7 @@ This project is a **Job Portal Backend** application, providing a platform for e
    - Secrets are fetched dynamically during runtime using AWS SDK.
 
 ### Diagram
-![Alt Text](https://github.com/yashGoyal40/jobportal-Ansible-Iac/blob/main/diagram.png)
+![Alt Text](https://github.com/yashGoyal40/jobportal-Ansible-Iac/blob/main/architecture.png)
 
 
 ---
